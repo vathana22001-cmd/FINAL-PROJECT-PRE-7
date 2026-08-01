@@ -1,0 +1,139 @@
+{
+  "drivers": [
+    {
+      "id": 1,
+      "licenseNo": "DL-10021",
+      "name": "Da Sreyoun",
+      "phone": "555-0101",
+      "status": "OnDelivery",
+      "vehicleId": 0
+    },
+    {
+      "id": 2,
+      "licenseNo": "DL-10045",
+      "name": "Vat Laihoun",
+      "phone": "555-0102",
+      "status": "Available",
+      "vehicleId": 0
+    },
+    {
+      "id": 3,
+      "licenseNo": "",
+      "name": "Prak Pirom",
+      "phone": "555-0103",
+      "status": "Available",
+      "vehicleId": 0
+    },
+    {
+      "id": 4,
+      "licenseNo": "DL-1041",
+      "name": "Ang",
+      "phone": "123456789",
+      "status": "Available",
+      "vehicleId": 0
+    }
+  ],
+  "packages": [
+    {
+      "address": "12 Riverside Ave",
+      "createdAt": "2026-07-29 08:00:00",
+      "customerId": 0,
+      "driverId": 3,
+      "history": [
+        {
+          "note": "Package created",
+          "status": "Pending",
+          "timestamp": "2026-07-29 08:00:00"
+        },
+        {
+          "note": "Assigned to Prak Pirom / TRK-5502",
+          "status": "Assigned",
+          "timestamp": "2026-08-01 00:56:18"
+        },
+        {
+          "note": "",
+          "status": "Cancelled",
+          "timestamp": "2026-08-01 02:04:45"
+        }
+      ],
+      "id": 1,
+      "receiverName": "Grace Lin",
+      "receiverPhone": "555-0199",
+      "senderName": "Acme Supplies",
+      "status": "Cancelled",
+      "vehicleId": 2,
+      "weightKg": 4.5
+    },
+    {
+      "address": "271",
+      "createdAt": "2026-08-01 12:34:02",
+      "customerId": 2,
+      "driverId": 0,
+      "history": [
+        {
+          "note": "Package created",
+          "status": "Pending",
+          "timestamp": "2026-08-01 12:34:02"
+        },
+        {
+          "note": "Sorry",
+          "status": "Cancelled",
+          "timestamp": "2026-08-01 12:36:41"
+        }
+      ],
+      "id": 2,
+      "receiverName": "vathana",
+      "receiverPhone": "086243016",
+      "senderName": "Ang",
+      "status": "Cancelled",
+      "vehicleId": 0,
+      "weightKg": 100.0
+    }
+  ],
+  "users": [
+    {
+      "id": 1,
+      "linkedId": 0,
+      "password": "$pbkdf2-sha256$200000$206919d7172c25f24fdfd3fd5b854b4a$165602f0b62f5bd676236bd7734b91d82519860cf3ebdb49aab78d315ba24607",
+      "role": "Administrator",
+      "username": "admin"
+    },
+    {
+      "id": 2,
+      "linkedId": 0,
+      "password": "$pbkdf2-sha256$200000$3907c728c2cbfaa66b89a8ace5bc9ff2$d371c50e6642716ee2c9b2141ad3bfa4dc8f5cd4802bd4fd81b5ff1d7eb3cd83",
+      "role": "Customer",
+      "username": "vathana"
+    },
+    {
+      "id": 3,
+      "linkedId": 4,
+      "password": "$pbkdf2-sha256$200000$970fde9c3df11a7dceba38e9caf98f64$acbe6f39aa47869872723cb2cec651b42b6c61109dd624fde3eadcc959ab45b3",
+      "role": "Driver",
+      "username": "Ang"
+    }
+  ],
+  "vehicles": [
+    {
+      "capacityKg": 800.0,
+      "id": 1,
+      "plate": "VAN-2201",
+      "status": "Available",
+      "type": "Van"
+    },
+    {
+      "capacityKg": 3000.0,
+      "id": 2,
+      "plate": "TRK-5502",
+      "status": "Available",
+      "type": "Truck"
+    },
+    {
+      "capacityKg": 100.0,
+      "id": 3,
+      "plate": "V3",
+      "status": "Available",
+      "type": "Lamborghini"
+    }
+  ]
+}
