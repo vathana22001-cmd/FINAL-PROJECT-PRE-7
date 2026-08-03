@@ -111,6 +111,13 @@
       "password": "$pbkdf2-sha256$200000$970fde9c3df11a7dceba38e9caf98f64$acbe6f39aa47869872723cb2cec651b42b6c61109dd624fde3eadcc959ab45b3",
       "role": "Driver",
       "username": "Ang"
+    },
+    {
+      "id": 4,
+      "linkedId": 0,
+      "password": "$pbkdf2-sha256$200000$eb4431aec9ba6bd691ec57c0251d6bea$4e8c39ec750f281f1c469f62bada6a5fef6495646e35d4d3b1e1ba73cfa1428f",
+      "role": "Dispatcher",
+      "username": "theany"
     }
   ],
   "vehicles": [

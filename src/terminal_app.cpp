@@ -158,6 +158,16 @@ Element metric(const std::string& label, int value, int total, Color value_color
 
 Element brand_logo();
 
+ButtonOption outline_only_button() {
+    ButtonOption option;
+    option.transform = [](const EntryState& state) {
+        Element label = text(state.label);
+        return state.focused ? label | bold | borderDouble
+                             : label | borderRounded;
+    };
+    return option;
+}
+
 ScreenInteractive& shared_screen() {
     static ScreenInteractive screen = ScreenInteractive::Fullscreen();
     return screen;
@@ -187,11 +197,11 @@ bool run_form(const std::string& title, std::vector<FormField>& fields,
     auto save = Button(submit_label, [&] {
         submitted = true;
         screen.ExitLoopClosure()();
-    });
+    }, outline_only_button());
     auto cancel = Button(cancel_label, [&] {
         if (alternate_requested) *alternate_requested = true;
         screen.ExitLoopClosure()();
-    });
+    }, outline_only_button());
     auto buttons = Container::Horizontal({save, cancel});
     auto form_components = inputs;
     form_components.push_back(buttons);
@@ -302,8 +312,8 @@ int choose(const std::string& title, const std::vector<std::string>& choices) {
     auto select = Button("Select", [&] {
         result = selected;
         screen.ExitLoopClosure()();
-    });
-    auto cancel = Button("Cancel", screen.ExitLoopClosure());
+    }, outline_only_button());
+    auto cancel = Button("Cancel", screen.ExitLoopClosure(), outline_only_button());
     auto container = Container::Vertical({menu, Container::Horizontal({select, cancel})});
     container = CatchEvent(container, [&](Event event) {
         if (event == Event::ArrowLeft || event == Event::ArrowRight) {
@@ -349,7 +359,7 @@ int choose(const std::string& title, const std::vector<std::string>& choices) {
 
 void notify(const std::string& title, const std::string& message, Color tone = theme::success) {
     ScreenInteractive& screen = shared_screen();
-    auto close = Button("Continue", screen.ExitLoopClosure());
+    auto close = Button("Continue", screen.ExitLoopClosure(), outline_only_button());
     auto renderer = Renderer(close, [&] {
         return vbox({
             filler(),
@@ -422,8 +432,8 @@ bool confirm(const std::string& title, const std::string& message) {
     auto yes = Button("Yes, continue", [&] {
         accepted = true;
         screen.ExitLoopClosure()();
-    });
-    auto no = Button("Cancel", screen.ExitLoopClosure());
+    }, outline_only_button());
+    auto no = Button("Cancel", screen.ExitLoopClosure(), outline_only_button());
     auto container = Container::Horizontal({yes, no});
     auto renderer = Renderer(container, [&] {
         return vbox({
@@ -433,7 +443,8 @@ bool confirm(const std::string& title, const std::string& message) {
                 titled(title, vbox({
                     paragraph(message) | center | color(theme::text),
                     separator() | color(theme::danger),
-                    hbox({filler(), yes->Render(), text("  "), no->Render(), filler()}),
+                    hbox({filler(), yes->Render() | color(theme::success), text("  "),
+                          no->Render() | color(theme::danger), filler()}),
                 }), theme::danger) | size(WIDTH, EQUAL, 62),
                 filler(),
             }),
@@ -446,7 +457,8 @@ bool confirm(const std::string& title, const std::string& message) {
 
 std::vector<NavItem> navigation_for(const User& user) {
     if (user.role == "Administrator") {
-        return {{"drivers",  "🪪  Driver Management"}, 
+        return {{"profile",  "👤  View Profile"},
+                {"drivers",  "🪪  Driver Management"},
                 {"vehicles", "🚛  Vehicle Management"},
                 {"packages", "📦  Package Management"}, 
                 {"dispatch", "⚡  Dispatch Packages"},
@@ -458,7 +470,8 @@ std::vector<NavItem> navigation_for(const User& user) {
                 {"logout",   "🚪  Exit"}};
     }
     if (user.role == "Dispatcher") {
-        return {{"drivers",       "🪪  View Drivers"}, 
+        return {{"profile",       "👤  View Profile"},
+                {"drivers",       "🪪  View Drivers"},
                 {"vehicles",      "🚛  View Vehicles"},
                 {"addpackage",    "➕  Add Package"}, 
                 {"dispatch",      "🎯  Assign Package"},
@@ -468,7 +481,8 @@ std::vector<NavItem> navigation_for(const User& user) {
                 {"logout",        "🚪  Exit"}};
     }
     if (user.role == "Driver") {
-        return {{"mypackages", "📦  View My Packages"}, 
+        return {{"profile",    "👤  View Profile"},
+                {"mypackages", "📦  View My Packages"},
                 {"tracking",   "🔄  Update Delivery Status"},
                 {"history",    "🕒  Delivery History"}, 
                 {"logout",     "🚪  Exit"}};
@@ -676,7 +690,7 @@ Element activity_element(DataStore& store) {
 std::string actions_for(const std::string& key, const User& user) {
     if (key == "drivers" && user.role == "Administrator") return "[A] Add  [E] Edit  [D] Delete  [S] Search";
     if (key == "vehicles" && user.role == "Administrator") return "[A] Add  [E] Edit  [D] Delete  [S] Search";
-    if (key == "users") return "[A] Add  [D] Delete  [S] Search";
+    if (key == "users") return "[ENTER/V] View profile  [A] Add  [D] Delete  [S] Search";
     if (key == "packages") return "[A] Add  [D] Delete  [V] History  [S] Search";
     if (key == "addpackage") return "[ENTER] Add package";
     if (key == "dispatch") return "[ENTER/D] Assign selected package  [S] Search";
@@ -959,6 +973,79 @@ void show_manifest(DataStore& store, int driver_id) {
     }
     if (packages.empty()) packages.push_back("No packages assigned to this driver.");
     choose("MANIFEST - " + driver->name, packages);
+}
+
+void show_profile(DataStore& store, const User& user) {
+    ScreenInteractive& screen = shared_screen();
+    auto close = Button("Close", screen.ExitLoopClosure(), outline_only_button());
+    auto container = CatchEvent(close, [&](Event event) {
+        if (event != Event::Escape) return false;
+        screen.ExitLoopClosure()();
+        return true;
+    });
+
+    auto renderer = Renderer(container, [&] {
+        Elements lines;
+        auto line = [&](const std::string& label, const std::string& value,
+                        Color value_color = theme::text) {
+            lines.push_back(hbox({
+                text(label) | size(WIDTH, EQUAL, 18) | color(theme::muted),
+                text(value) | color(value_color) | flex,
+            }));
+        };
+
+        line("User ID", "USR" + std::to_string(user.id), theme::primary);
+        line("Username", user.username);
+        line("Role", user.role, option_color(user.role));
+
+        if (user.role == "Driver") {
+            lines.push_back(separator() | color(theme::border));
+            if (Driver* driver = store.findDriver(user.linkedId)) {
+                line("Driver ID", "DRV" + std::to_string(driver->id), theme::primary);
+                line("Full name", driver->name);
+                line("Phone", driver->phone.empty() ? "Not provided" : driver->phone);
+                line("License", driver->licenseNo);
+                line("Status", driver->status, status_color(driver->status));
+                line("Vehicle", vehicle_name(store, driver->vehicleId));
+            } else {
+                line("Driver record", "Not linked", theme::warning);
+            }
+        }
+
+        if (user.role == "Customer") {
+            int total = 0;
+            int active = 0;
+            int delivered = 0;
+            for (const auto& package : store.packages) {
+                if (package.customerId != user.id) continue;
+                ++total;
+                active += package.status == "Pending" || package.status == "Assigned" ||
+                          package.status == "InTransit";
+                delivered += package.status == "Delivered";
+            }
+            lines.push_back(separator() | color(theme::border));
+            line("Total packages", std::to_string(total), theme::primary);
+            line("Active deliveries", std::to_string(active), theme::warning);
+            line("Delivered", std::to_string(delivered), theme::success);
+        }
+
+        lines.push_back(separator() | color(theme::border));
+        lines.push_back(text("Your password is securely hidden.") |
+                        center | color(theme::muted));
+        lines.push_back(close->Render() | center | color(theme::primary));
+
+        return vbox({
+            filler(),
+            hbox({
+                filler(),
+                titled("👤 MY PROFILE", vbox(std::move(lines)), theme::primary) |
+                    size(WIDTH, EQUAL, 58),
+                filler(),
+            }),
+            filler(),
+        }) | bgcolor(theme::background);
+    });
+    screen.Loop(renderer);
 }
 
 void add_driver(DataStore& store) {
@@ -1262,7 +1349,15 @@ void handle_action(DataStore& store, User& user, DashboardState& state) {
             if (user.role != "Customer") update_status(store, state.selected_id, user);
             break;
         case Action::View:
-            if (key == "manifest") {
+            if (key == "profile") {
+                show_profile(store, user);
+            } else if (key == "users" && user.role == "Administrator") {
+                if (User* selected_user = store.findUser(state.selected_id)) {
+                    show_profile(store, *selected_user);
+                } else {
+                    notify("VIEW PROFILE", "Select a user account first.", theme::warning);
+                }
+            } else if (key == "manifest") {
                 show_manifest(store, state.selected_id);
             } else if (key == "tracking" || key == "history" || key == "mypackages" ||
                        key == "packages" || key == "customerpackages" ||
